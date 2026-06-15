@@ -28,6 +28,7 @@ from core.dsp import (
     compute_vpp,
 )
 from core.ring_buffer import RingBuffer
+from core.screen_keepalive import ScreenKeepAlive
 from core.serial_worker import SerialWorker
 from core.trigger import find_trigger_index
 from file_io.file_exporter import save_csv, save_fft_csv, save_screenshot, save_wav
@@ -53,6 +54,7 @@ class MainWindow(QMainWindow):
         self._ring = RingBuffer(self._settings.buffer_size)
         self._last_freqs: np.ndarray = np.array([0.0])
         self._last_mags: np.ndarray = np.array([-120.0])
+        self._keepalive = ScreenKeepAlive()
 
         self._build_ui()
         self._build_menu()
@@ -265,6 +267,8 @@ class MainWindow(QMainWindow):
     @pyqtSlot()
     def _refresh_plots(self) -> None:
         """Main plot refresh cycle called every 33 ms."""
+        self._update_keepalive()
+
         if not self._running:
             return
 
