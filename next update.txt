@@ -1,0 +1,2 @@
+1. keep screen alive when running (not paused and not minimized window). 
+2. add suitable logo

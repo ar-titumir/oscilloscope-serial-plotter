@@ -1,0 +1,257 @@
+/* Arduino Oscilloscope — Dark Theme
+   Replaceable tokens: __BG__  __PANEL__  __ACCENT__
+   Defaults are substituted at runtime by AppSettings.apply_theme_to_qss()
+*/
+
+QMainWindow, QDialog {
+    background-color: __BG__;
+    color: #ffffff;
+}
+
+QWidget {
+    background-color: __BG__;
+    color: #ffffff;
+    font-family: "Consolas", "Courier New", monospace;
+    font-size: 11px;
+}
+
+/* ── Toolbar ───────────────────────────────────────────── */
+QToolBar {
+    background-color: __PANEL__;
+    border-bottom: 1px solid #3a3a3a;
+    spacing: 4px;
+    padding: 2px 6px;
+}
+QToolBar QToolButton {
+    background-color: transparent;
+    color: __ACCENT__;
+    border: none;
+    padding: 4px 10px;
+    font-size: 12px;
+    border-radius: 4px;
+}
+QToolBar QToolButton:hover {
+    background-color: #3a3a3a;
+}
+QToolBar QToolButton:pressed {
+    background-color: __ACCENT__;
+    color: #000000;
+}
+
+/* ── Menu Bar ──────────────────────────────────────────── */
+QMenuBar {
+    background-color: __PANEL__;
+    color: #ffffff;
+    border-bottom: 1px solid #3a3a3a;
+}
+QMenuBar::item:selected {
+    background-color: __ACCENT__;
+    color: #000000;
+    border-radius: 2px;
+}
+QMenu {
+    background-color: __PANEL__;
+    border: 1px solid #444;
+}
+QMenu::item:selected {
+    background-color: __ACCENT__;
+    color: #000000;
+}
+
+/* ── Group Boxes ───────────────────────────────────────── */
+QGroupBox {
+    background-color: __PANEL__;
+    border: 1px solid #3a3a3a;
+    border-radius: 5px;
+    margin-top: 18px;
+    padding: 4px;
+    font-weight: bold;
+    color: __ACCENT__;
+}
+QGroupBox::title {
+    subcontrol-origin: margin;
+    left: 8px;
+    padding: 0 4px;
+    color: __ACCENT__;
+    font-size: 11px;
+}
+
+/* ── Scroll Area ───────────────────────────────────────── */
+QScrollArea {
+    background-color: __BG__;
+    border: none;
+}
+QScrollBar:vertical {
+    background: __BG__;
+    width: 8px;
+    border-radius: 4px;
+}
+QScrollBar::handle:vertical {
+    background: #555;
+    border-radius: 4px;
+    min-height: 20px;
+}
+QScrollBar::handle:vertical:hover {
+    background: __ACCENT__;
+}
+QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical { height: 0; }
+
+/* ── Push Buttons ──────────────────────────────────────── */
+QPushButton {
+    background-color: #3a3a3a;
+    color: #ffffff;
+    border: 1px solid #555;
+    border-radius: 4px;
+    padding: 4px 10px;
+    min-height: 22px;
+}
+QPushButton:hover {
+    background-color: #484848;
+    border-color: __ACCENT__;
+}
+QPushButton:pressed {
+    background-color: __ACCENT__;
+    color: #000000;
+}
+QPushButton#connectBtn {
+    background-color: #1a4a1a;
+    border-color: #2ecc40;
+    color: #2ecc40;
+}
+QPushButton#connectBtn:hover {
+    background-color: #2ecc40;
+    color: #000000;
+}
+QPushButton#disconnectBtn {
+    background-color: #4a1a1a;
+    border-color: #ff4444;
+    color: #ff4444;
+}
+QPushButton#disconnectBtn:hover {
+    background-color: #ff4444;
+    color: #000000;
+}
+
+/* ── ComboBox ──────────────────────────────────────────── */
+QComboBox {
+    background-color: #3a3a3a;
+    border: 1px solid #555;
+    border-radius: 4px;
+    padding: 2px 6px;
+    color: #ffffff;
+    min-height: 22px;
+}
+QComboBox:hover { border-color: __ACCENT__; }
+QComboBox::drop-down {
+    border: none;
+    width: 18px;
+}
+QComboBox::down-arrow { image: none; width: 0; }
+QComboBox QAbstractItemView {
+    background-color: __PANEL__;
+    border: 1px solid #555;
+    selection-background-color: __ACCENT__;
+    selection-color: #000000;
+}
+
+/* ── SpinBoxes ─────────────────────────────────────────── */
+QSpinBox, QDoubleSpinBox {
+    background-color: #3a3a3a;
+    border: 1px solid #555;
+    border-radius: 4px;
+    padding: 2px 4px;
+    color: #ffffff;
+    min-height: 22px;
+}
+QSpinBox:hover, QDoubleSpinBox:hover { border-color: __ACCENT__; }
+QSpinBox::up-button, QDoubleSpinBox::up-button,
+QSpinBox::down-button, QDoubleSpinBox::down-button {
+    background-color: #484848;
+    border: none;
+    width: 14px;
+}
+QSpinBox::up-button:hover, QDoubleSpinBox::up-button:hover,
+QSpinBox::down-button:hover, QDoubleSpinBox::down-button:hover {
+    background-color: __ACCENT__;
+}
+
+/* ── CheckBox ──────────────────────────────────────────── */
+QCheckBox {
+    color: #cccccc;
+    spacing: 6px;
+}
+QCheckBox::indicator {
+    width: 14px;
+    height: 14px;
+    border-radius: 3px;
+    border: 1px solid #666;
+    background-color: #3a3a3a;
+}
+QCheckBox::indicator:checked {
+    background-color: __ACCENT__;
+    border-color: __ACCENT__;
+}
+QCheckBox#mapToggle::indicator:checked {
+    background-color: #2ecc40;
+    border-color: #2ecc40;
+}
+QCheckBox#mapToggle { color: #2ecc40; font-weight: bold; }
+
+/* ── Labels ────────────────────────────────────────────── */
+QLabel {
+    color: #cccccc;
+    background: transparent;
+}
+QLabel#measName {
+    color: #888888;
+    font-size: 10px;
+}
+QLabel#measValue {
+    color: __ACCENT__;
+    font-weight: bold;
+    font-size: 11px;
+    font-family: "Consolas", monospace;
+}
+QLabel#hexLabel {
+    color: #888888;
+    font-size: 10px;
+    font-family: monospace;
+}
+
+/* ── Status Bar ────────────────────────────────────────── */
+QStatusBar {
+    background-color: __PANEL__;
+    color: #888888;
+    border-top: 1px solid #3a3a3a;
+    font-size: 10px;
+}
+
+/* ── Separators ────────────────────────────────────────── */
+QFrame#sepLine, QFrame#measSep {
+    color: #3a3a3a;
+    background: #3a3a3a;
+}
+
+/* ── Tab Widget ────────────────────────────────────────── */
+QTabWidget::pane {
+    border: 1px solid #3a3a3a;
+    background: __PANEL__;
+}
+QTabBar::tab {
+    background: #2a2a2a;
+    color: #888;
+    padding: 6px 14px;
+    border: 1px solid #3a3a3a;
+    border-bottom: none;
+    border-radius: 3px 3px 0 0;
+}
+QTabBar::tab:selected {
+    background: __PANEL__;
+    color: __ACCENT__;
+    border-color: #444;
+}
+
+/* ── Dialog buttons ────────────────────────────────────── */
+QDialogButtonBox QPushButton {
+    min-width: 70px;
+}
