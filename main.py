@@ -4,8 +4,19 @@ import sys
 import os
 from PyQt6.QtWidgets import QApplication
 from PyQt6.QtCore import Qt
+from PyQt6.QtGui import QIcon
 from ui.main_window import MainWindow
 from config.settings import AppSettings
+
+
+def load_icon() -> QIcon:
+    """Load application icon from project root (icon.png, icon.ico, or icon.svg)."""
+    base = os.path.dirname(os.path.abspath(__file__))
+    for name in ("icon.png", "icon.ico", "icon.svg", "icon.jpg"):
+        path = os.path.join(base, name)
+        if os.path.exists(path):
+            return QIcon(path)
+    return QIcon()  # fallback: no icon
 
 
 def main() -> None:
@@ -17,6 +28,10 @@ def main() -> None:
     app.setApplicationName("Arduino Oscilloscope")
     app.setOrganizationName("ArduinoOscilloscope")
 
+    # Set icon for taskbar, alt-tab, and window title bar
+    icon = load_icon()
+    app.setWindowIcon(icon)
+
     settings = AppSettings()
 
     qss_path = os.path.join(os.path.dirname(__file__), "ui", "styles.qss")
@@ -26,6 +41,7 @@ def main() -> None:
 
     window = MainWindow(settings)
     window.setWindowTitle("Arduino Oscilloscope")
+    window.setWindowIcon(icon)   # also set on the window itself (belt + braces)
     window.setMinimumSize(1200, 700)
     window.show()
 
