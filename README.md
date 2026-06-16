@@ -37,11 +37,11 @@ This tool fixes all of that — `pyqtgraph` for smooth real-time rendering, a pr
 
 ### 🔹 Main Window — Live Waveform + FFT
 
-![Main GUI Screenshot](https://github.com/user-attachments/assets/PLACEHOLDER_MAIN)
+![Main GUI Screenshot](https://github.com/user-attachments/assets/4d2b932f-433f-4738-a88e-fe2878e7ef48)
 
 ### 🔹 Settings Dialog — Theme Customization
 
-![Settings Screenshot](https://github.com/user-attachments/assets/PLACEHOLDER_SETTINGS)
+![Settings Screenshot](https://github.com/user-attachments/assets/53410ecb-1834-4bf4-afaf-62cdc4635087)
 
 ---
 
