@@ -319,6 +319,7 @@ class MainWindow(QMainWindow):
         self._settings.run_state = self._running
         self._run_action.setText("⏸  Pause" if self._running else "▶  Run")
         self._status_bar.showMessage("Running." if self._running else "Paused.")
+        self._update_keepalive()
 
     def _clear_buffer(self) -> None:
         """Clear the ring buffer."""
@@ -402,6 +403,7 @@ class MainWindow(QMainWindow):
     def closeEvent(self, event) -> None:
         """Clean up serial worker and save settings on close."""
         self._timer.stop()
+        self._keepalive.disable()
         if self._worker:
             self._worker.stop()
         self._settings.save()
@@ -413,3 +415,17 @@ class MainWindow(QMainWindow):
             self._toggle_run()
         else:
             super().keyPressEvent(event)
+
+    def _update_keepalive(self) -> None:
+        """Enable screen keep-awake when running and visible; release otherwise."""
+        is_minimized = bool(self.windowState() & Qt.WindowState.WindowMinimized)
+        should_keep = self._running and not is_minimized
+        if should_keep:
+            self._keepalive.enable()
+        else:
+            self._keepalive.disable()
+
+    def changeEvent(self, event) -> None:
+        """Release keep-awake when window is minimized, re-enable on restore."""
+        super().changeEvent(event)
+        self._update_keepalive()

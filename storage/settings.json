@@ -9,7 +9,7 @@
   "vref": 5.0,
   "time_per_div_ms": 10.0,
   "buffer_size": 1024,
-  "sample_rate": 10000,
+  "sample_rate": 2000,
   "y_min": -0.5,
   "y_max": 5.5,
   "volts_per_div": 1.0,
@@ -28,7 +28,7 @@
   "grid_color": "#333333",
   "waveform_color": "#00ff88",
   "fft_color": "#ff6b35",
-  "run_state": true,
+  "run_state": false,
   "show_fft": true,
   "show_measurements": true
 }
