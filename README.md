@@ -113,6 +113,7 @@ oscilloscope-serial-plotter/
 │
 ├── core/
 │   ├── serial_worker.py      # QThread serial reader
+|   ├── screen_keepalive.py   # Keep screen alive when running
 │   ├── ring_buffer.py        # Thread-safe circular buffer
 │   ├── dsp.py                # FFT, RMS, Vpp, frequency, dV/dt
 │   └── trigger.py            # Edge trigger detection
@@ -292,10 +293,10 @@ Future improvements:
 
 ## 👨‍💻 Author
 
-**ar_titumir**
+[**ar_titumir**](https://github.com/ar-titumir) 
 GitHub: [https://github.com/ar-titumir](https://github.com/ar-titumir)
 
-If this project helped you, give it a ⭐
+If this project helped you, give it a ⭐ at [this repo](https://github.com/ar-titumir/oscilloscope-serial-plotter)
 
 ## 📜 License
 
