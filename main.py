@@ -1,4 +1,4 @@
-"""Entry point for Arduino Oscilloscope application."""
+"""Entry point for Serial Oscilloscope application."""
 
 import sys
 import os
@@ -25,8 +25,8 @@ def main() -> None:
     os.makedirs("storage", exist_ok=True)
 
     app = QApplication(sys.argv)
-    app.setApplicationName("Arduino Oscilloscope")
-    app.setOrganizationName("ArduinoOscilloscope")
+    app.setApplicationName("Serial Oscilloscope")
+    app.setOrganizationName("SerialOscilloscope")
 
     # Set icon for taskbar, alt-tab, and window title bar
     icon = load_icon()
@@ -40,7 +40,7 @@ def main() -> None:
             app.setStyleSheet(f.read())
 
     window = MainWindow(settings)
-    window.setWindowTitle("Arduino Oscilloscope")
+    window.setWindowTitle("Serial Oscilloscope")
     window.setWindowIcon(icon)   # also set on the window itself (belt + braces)
     window.setMinimumSize(1200, 700)
     window.show()

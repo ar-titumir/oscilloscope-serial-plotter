@@ -1,2 +1,7 @@
-1. keep screen alive when running (not paused and not minimized window). 
-2. add suitable logo
+1. Done keep screen alive when running (not paused and not minimized window). 
+2. Done add suitable logo
+3. Done Stabilize plot using trigger
+4. Add math operations.
+	a) options to show independently
+	b) dv/dt, invert, etc
+	c) Has amplitude scaling factor

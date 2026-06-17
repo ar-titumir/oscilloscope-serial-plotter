@@ -1,6 +1,7 @@
 """Main application window: assembles all panels, toolbar, and menu bar."""
 
 import os
+from datetime import datetime
 
 import numpy as np
 from PyQt6.QtCore import QTimer, Qt, pyqtSlot
@@ -27,6 +28,7 @@ from core.dsp import (
     compute_rms,
     compute_vpp,
 )
+from core.recorder import SignalRecorder
 from core.ring_buffer import RingBuffer
 from core.screen_keepalive import ScreenKeepAlive
 from core.serial_worker import SerialWorker
@@ -35,6 +37,7 @@ from file_io.file_exporter import save_csv, save_fft_csv, save_screenshot, save_
 from ui.controls_panel import ControlsPanel
 from ui.fft_widget import FftWidget
 from ui.measurements_panel import MeasurementsPanel
+from ui.save_recording_dialog import SaveRecordingDialog
 from ui.settings_dialog import SettingsDialog
 from ui.waveform_widget import WaveformWidget
 
@@ -56,6 +59,8 @@ class MainWindow(QMainWindow):
         self._last_mags: np.ndarray = np.array([-120.0])
         self._keepalive = ScreenKeepAlive()
 
+        self._recorder = SignalRecorder(float(self._settings.sample_rate))
+
         self._build_ui()
         self._build_menu()
         self._build_toolbar()
@@ -64,6 +69,12 @@ class MainWindow(QMainWindow):
         self._timer.setInterval(33)  # ~30 fps
         self._timer.timeout.connect(self._refresh_plots)
         self._timer.start()
+
+        # Status bar blink timer for recording indicator
+        self._rec_blink_timer = QTimer(self)
+        self._rec_blink_timer.setInterval(600)
+        self._rec_blink_timer.timeout.connect(self._blink_rec_status)
+        self._rec_blink_state = False
 
         self._apply_theme()
 
@@ -159,11 +170,12 @@ class MainWindow(QMainWindow):
         settings_menu.addAction(act_settings)
 
     def _build_toolbar(self) -> None:
-        """Build the main toolbar with Run/Pause and Settings buttons."""
+        """Build the main toolbar with Run/Pause, Record, Settings, and Clear buttons."""
         tb = QToolBar("Main Toolbar")
         tb.setMovable(False)
         self.addToolBar(tb)
 
+        # Run / Pause
         self._run_action = QAction("⏸  Pause", self)
         self._run_action.setShortcut(QKeySequence(Qt.Key.Key_Space))
         self._run_action.setToolTip("Run / Pause (Space)")
@@ -172,18 +184,29 @@ class MainWindow(QMainWindow):
 
         tb.addSeparator()
 
+        # Record
+        self._record_action = QAction("⏺  Record", self)
+        self._record_action.setToolTip("Start / Stop recording signal to Excel")
+        self._record_action.setObjectName("recordBtn")
+        self._record_action.triggered.connect(self._toggle_recording)
+        tb.addAction(self._record_action)
+
+        tb.addSeparator()
+
+        # Settings
         act_settings_tb = QAction("⚙  Settings", self)
         act_settings_tb.triggered.connect(self._open_settings_dialog)
         tb.addAction(act_settings_tb)
 
         tb.addSeparator()
 
+        # Clear buffer
         act_clear = QAction("🗑  Clear Buffer", self)
         act_clear.triggered.connect(self._clear_buffer)
         tb.addAction(act_clear)
 
     # ------------------------------------------------------------------
-    # Slots
+    # Slots — serial
     # ------------------------------------------------------------------
 
     @pyqtSlot(str, int)
@@ -213,6 +236,8 @@ class MainWindow(QMainWindow):
     @pyqtSlot()
     def _on_disconnect(self) -> None:
         """Stop the serial worker."""
+        if self._recorder.is_recording:
+            self._stop_recording()
         if self._worker:
             self._worker.stop()
             self._worker = None
@@ -221,8 +246,9 @@ class MainWindow(QMainWindow):
 
     @pyqtSlot(np.ndarray)
     def _on_data_ready(self, chunk: np.ndarray) -> None:
-        """Receive a new data chunk from the serial worker."""
+        """Receive a new data chunk — feed ring buffer and recorder."""
         self._ring.append(chunk)
+        self._recorder.feed(chunk)
 
     @pyqtSlot(str)
     def _on_serial_error(self, message: str) -> None:
@@ -240,10 +266,15 @@ class MainWindow(QMainWindow):
         else:
             self._status_bar.showMessage("Disconnected.")
 
+    # ------------------------------------------------------------------
+    # Slots — settings
+    # ------------------------------------------------------------------
+
     @pyqtSlot()
     def _on_settings_changed(self) -> None:
         """Re-apply settings to all widgets when a control changes."""
         self._ring.resize(self._settings.buffer_size)
+        self._recorder.update_sample_rate(float(self._settings.sample_rate))
         self._waveform.set_y_range(self._settings.y_min, self._settings.y_max)
         self._waveform.set_dvdt_overlay(self._settings.dvdt_enabled)
         self._waveform.set_trigger_level(self._settings.trigger_level)
@@ -263,6 +294,10 @@ class MainWindow(QMainWindow):
                 vref=s.vref,
             )
         self._settings.save()
+
+    # ------------------------------------------------------------------
+    # Plot refresh
+    # ------------------------------------------------------------------
 
     @pyqtSlot()
     def _refresh_plots(self) -> None:
@@ -320,6 +355,61 @@ class MainWindow(QMainWindow):
         self._run_action.setText("⏸  Pause" if self._running else "▶  Run")
         self._status_bar.showMessage("Running." if self._running else "Paused.")
         self._update_keepalive()
+
+    def _toggle_recording(self) -> None:
+        """Start or stop signal recording."""
+        if self._recorder.is_recording:
+            self._stop_recording()
+        else:
+            self._start_recording()
+
+    def _start_recording(self) -> None:
+        """Begin accumulating samples into the recorder."""
+        self._recorder.start()
+        self._record_action.setText("⏹  Stop Rec")
+        self._record_action.setToolTip("Stop recording and save to Excel")
+        self._rec_blink_timer.start()
+        self._status_bar.showMessage("● Recording…")
+
+    def _stop_recording(self) -> None:
+        """Stop the recorder and open the save dialog."""
+        self._recorder.stop()
+        self._rec_blink_timer.stop()
+        self._record_action.setText("⏺  Record")
+        self._record_action.setToolTip("Start recording signal to Excel")
+
+        n = self._recorder.sample_count
+        if n == 0:
+            self._status_bar.showMessage("Recording stopped — no data captured.")
+            return
+
+        # Build default filename from recording start time
+        t = self._recorder.start_time
+        default_name = t.strftime("recording_%Y%m%d_%H%M%S") if t else "recording"
+        default_dir = os.path.abspath("storage")
+        os.makedirs(default_dir, exist_ok=True)
+
+        dlg = SaveRecordingDialog(default_name, default_dir, self)
+        if dlg.exec() != dlg.DialogCode.Accepted:
+            self._status_bar.showMessage(f"Recording discarded ({n} samples).")
+            return
+
+        path = dlg.get_path()
+        try:
+            saved = self._recorder.save_xlsx(path)
+            self._status_bar.showMessage(f"Recording saved → {path}  ({saved} samples)")
+        except (ValueError, OSError) as exc:
+            QMessageBox.critical(self, "Save Error", str(exc))
+            self._status_bar.showMessage("Recording save failed.")
+
+    def _blink_rec_status(self) -> None:
+        """Toggle the recording indicator in the status bar."""
+        self._rec_blink_state = not self._rec_blink_state
+        n = self._recorder.sample_count
+        if self._rec_blink_state:
+            self._status_bar.showMessage(f"● Recording…  {n} samples")
+        else:
+            self._status_bar.showMessage(f"  Recording…  {n} samples")
 
     def _clear_buffer(self) -> None:
         """Clear the ring buffer."""
@@ -401,8 +491,11 @@ class MainWindow(QMainWindow):
     # ------------------------------------------------------------------
 
     def closeEvent(self, event) -> None:
-        """Clean up serial worker and save settings on close."""
+        """Stop recording, clean up serial worker, and save settings on close."""
+        if self._recorder.is_recording:
+            self._recorder.stop()
         self._timer.stop()
+        self._rec_blink_timer.stop()
         self._keepalive.disable()
         if self._worker:
             self._worker.stop()
@@ -410,9 +503,11 @@ class MainWindow(QMainWindow):
         event.accept()
 
     def keyPressEvent(self, event) -> None:
-        """Handle Space key to toggle run/pause."""
+        """Handle Space (run/pause) and R (record toggle) keyboard shortcuts."""
         if event.key() == Qt.Key.Key_Space:
             self._toggle_run()
+        elif event.key() == Qt.Key.Key_R and not event.isAutoRepeat():
+            self._toggle_recording()
         else:
             super().keyPressEvent(event)
 
