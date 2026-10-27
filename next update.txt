@@ -5,3 +5,6 @@
 	a) options to show independently
 	b) dv/dt, invert, etc
 	c) Has amplitude scaling factor
+5. adding multichannel
+6. fix: "when manually input voltage div, y scale shifts randomly
+7. fix: fft window zooming issue
